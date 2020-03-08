@@ -509,7 +509,7 @@ static int cpu_psci_cpu_kill(unsigned int cpu)
 		pr_debug("Retrying again to check for CPU kill\n");
 	}
 
-	pr_warn("CPU%d may not have shut down cleanly (AFFINITY_INFO reports %d)\n",
+	pr_debug("CPU%d may not have shut down cleanly (AFFINITY_INFO reports %d)\n",
 			cpu, err);
 	/* Make op_cpu_kill() fail. */
 	return 0;
