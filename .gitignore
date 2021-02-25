@@ -100,3 +100,6 @@ all.config
 # fetched Android config fragments
 android/configs/android-*.cfg
 out/
+security/samsung/*.inc
+security/samsung/*.rules
+security/samsung/*.bin
