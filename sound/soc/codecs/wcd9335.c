@@ -57,7 +57,7 @@
 #define WCD9335_FRAC_RATES_MASK (SNDRV_PCM_RATE_44100)
 
 #define WCD9335_MIX_RATES_MASK (SNDRV_PCM_RATE_48000 |\
-				SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000|)
+				SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000)
 				
 #define TASHA_FORMATS_S16_S24_LE (SNDRV_PCM_FMTBIT_S16_LE | \
 				  SNDRV_PCM_FMTBIT_S24_LE | \
@@ -2364,7 +2364,7 @@ static int slim_tx_mixer_put(struct snd_kcontrol *kcontrol,
 	u32 dai_id = widget->shift;
 	u32 port_id = mixer->shift;
 	u32 enable = ucontrol->value.integer.value[0];
-	u32 vtable;
+	u32 vtable = 0;
 
 
 	dev_dbg(codec->dev, "%s: wname %s cname %s value %u shift %d item %ld\n",
@@ -4253,7 +4253,7 @@ static int tasha_codec_enable_lineout_pa(struct snd_soc_dapm_widget *w,
 					 int event)
 {
 	struct snd_soc_codec *codec = w->codec;
-	u16 lineout_vol_reg, lineout_mix_vol_reg;
+	u16 lineout_vol_reg = 0, lineout_mix_vol_reg = 0;
 	int ret = 0;
 
 	dev_dbg(codec->dev, "%s %s %d\n", __func__, w->name, event);
@@ -4535,7 +4535,8 @@ static int tasha_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 			wcd_clsh_fsm(codec, &tasha->clsh_d,
 					 WCD_CLSH_EVENT_PRE_DAC,
 					 WCD_CLSH_STATE_HPHR,
-					 CLS_AB);
+					 ((hph_mode == CLS_H_LOHIFI) ?
+ 					   CLS_AB : hph_mode));
 		}
 
 		tasha_codec_hph_mode_config(codec, event, hph_mode);
@@ -4578,7 +4579,8 @@ static int tasha_codec_hphr_dac_event(struct snd_soc_dapm_widget *w,
 			wcd_clsh_fsm(codec, &tasha->clsh_d,
 					 WCD_CLSH_EVENT_POST_PA,
 					 WCD_CLSH_STATE_HPHR,
-					 CLS_AB);
+					 ((hph_mode == CLS_H_LOHIFI) ?
+ 					   CLS_AB : hph_mode));
 		}
 		break;
 	};
@@ -4629,7 +4631,8 @@ static int tasha_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 			wcd_clsh_fsm(codec, &tasha->clsh_d,
 					 WCD_CLSH_EVENT_PRE_DAC,
 					 WCD_CLSH_STATE_HPHL,
-					 CLS_AB);
+					 ((hph_mode == CLS_H_LOHIFI) ?
+ 					   CLS_AB : hph_mode));
 		}
 		
 		tasha_codec_hph_mode_config(codec, event, hph_mode);
@@ -4684,7 +4687,8 @@ static int tasha_codec_hphl_dac_event(struct snd_soc_dapm_widget *w,
 			wcd_clsh_fsm(codec, &tasha->clsh_d,
 			     WCD_CLSH_EVENT_POST_PA,
 			     WCD_CLSH_STATE_HPHL,
-			     (CLS_AB);
+			     ((hph_mode == CLS_H_LOHIFI) ?
+ 					   CLS_AB : hph_mode));
 		}
 
 		if (test_bit(CLASSH_CONFIG, &tasha->status_mask)) {
@@ -4846,7 +4850,6 @@ static int tasha_codec_ear_dac_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_codec *codec = w->codec;
 	struct tasha_priv *tasha = snd_soc_codec_get_drvdata(codec);
 	int ret = 0;
-	int hph_mode = tasha->hph_mode;
 	
 
 	dev_dbg(codec->dev, "%s %s %d\n", __func__, w->name, event);
