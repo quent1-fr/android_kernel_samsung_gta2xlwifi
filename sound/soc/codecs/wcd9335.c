@@ -51,7 +51,7 @@
 
 #define WCD9335_RATES_MASK (SNDRV_PCM_RATE_8000 | SNDRV_PCM_RATE_16000 |\
 			    SNDRV_PCM_RATE_32000 | SNDRV_PCM_RATE_48000 |\
-			    SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000|\
+			    SNDRV_PCM_RATE_96000 | SNDRV_PCM_RATE_192000 |\
 			    SNDRV_PCM_RATE_384000)
 /* Fractional Rates */
 #define WCD9335_FRAC_RATES_MASK (SNDRV_PCM_RATE_44100)
@@ -6052,7 +6052,7 @@ static int tasha_codec_enable_dec(struct snd_soc_dapm_widget *w,
 				      msecs_to_jiffies(tx_unmute_delay));
 		if (tasha->tx_hpf_work[decimator].hpf_cut_off_freq !=
 							CF_MIN_3DB_150HZ)
-			schedule_delayed_work(
+			queue_delayed_work(system_power_efficient_wq,
 					&tasha->tx_hpf_work[decimator].dwork,
 					msecs_to_jiffies(300));
 		/* apply gain after decimator is enabled */
@@ -12470,8 +12470,10 @@ static int tasha_dig_core_power_collapse(struct tasha_priv *tasha,
 		goto unlock_mutex;
 
 	if (tasha->power_active_ref < 0) {
-		dev_dbg(tasha->dev, "%s: power_active_ref is negative\n",
+		dev_info(tasha->dev,
+			"%s: power_active_ref is negative, resetting it\n",
 			__func__);
+		tasha->power_active_ref = 0;
 		goto unlock_mutex;
 	}
 
