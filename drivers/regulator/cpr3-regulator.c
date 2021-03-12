@@ -6178,6 +6178,7 @@ int cpr3_regulator_unregister(struct cpr3_controller *ctrl)
 		if (rc) {
 			cpr3_err(ctrl, "failed to clear CPR4 configuration,rc=%d\n",
 				rc);
+        }
 	}
 
 	cpr3_ctrl_loop_disable(ctrl);
