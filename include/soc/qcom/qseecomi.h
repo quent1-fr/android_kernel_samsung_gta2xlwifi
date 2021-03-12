@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013-2019, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013-2017, 2019, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -124,12 +124,6 @@ struct qseecom_check_app_ireq {
 	uint32_t qsee_cmd_id;
 	char     app_name[MAX_APP_NAME_SIZE];
 } __attribute__((__packed__));
-
-#ifdef CONFIG_QSEECOM_DEBUG
-__packed struct qseecom_get_tzheap_status_ireq {
-	uint32_t qsee_cmd_id;
-};
-#endif
 
 struct qseecom_load_app_ireq {
 	uint32_t qsee_cmd_id;
