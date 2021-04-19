@@ -55,6 +55,12 @@ config CALC_TIME_TO_FULL
 	help
 	 Say Y to use calc time to full function.
 
+config USE_POGO
+	bool "enable pogo charging"
+	default n
+	help
+	 Say Y to enable CONFIG_USE_POGO
+
 config MULTI_CHARGING
 	bool "support for multi charger ICs"
 	help

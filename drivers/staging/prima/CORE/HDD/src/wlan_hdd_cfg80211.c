@@ -619,6 +619,12 @@ static const struct nla_policy wlan_hdd_tm_policy[WLAN_HDD_TM_ATTR_MAX + 1] =
 #endif /* WLAN_NL80211_TESTMODE */
 
 #ifdef FEATURE_WLAN_CH_AVOID
+
+/*---------------------------------------------------------------------------
+Function declarations and documenation
+-------------------------------------------------------------------------*/
+void wlan_hdd_free_cache_channels(hdd_context_t *hdd_ctx);
+
 /*
  * FUNCTION: wlan_hdd_send_avoid_freq_event
  * This is called when wlan driver needs to send vendor specific
@@ -11067,6 +11073,12 @@ int wlan_hdd_restore_channels(hdd_context_t *hdd_ctx)
 	status = sme_update_channel_list((tpAniSirGlobal)hdd_ctx->hHal);
 	if (status)
 		hddLog(VOS_TRACE_LEVEL_ERROR, "Can't Restore channel list");
+    else
+        /*
+        * Free the cache channels when the
+        * disabled channels are restored
+        */
+        wlan_hdd_free_cache_channels(hdd_ctx);
 	EXIT();
 
 	return 0;

@@ -1255,6 +1255,8 @@ static int s2mu004_fg_get_property(struct power_supply *psy, enum power_supply_p
 	case POWER_SUPPLY_PROP_CAPACITY:
 		if (val->intval == SEC_FUELGAUGE_CAPACITY_TYPE_RAW) {
 			val->intval = s2mu004_get_rawsoc(fuelgauge);
+		} else if (val->intval == SEC_FUELGAUGE_CAPACITY_TYPE_DYNAMIC_SCALE) {
+			val->intval = fuelgauge->raw_capacity;
 		} else {
 			val->intval = s2mu004_get_rawsoc(fuelgauge) / 10;
 			if (fuelgauge->pdata->capacity_calculation_type &
@@ -1268,6 +1270,7 @@ static int s2mu004_fg_get_property(struct power_supply *psy, enum power_supply_p
 				val->intval = 1000;
 			if (val->intval < 0)
 				val->intval = 0;
+			fuelgauge->raw_capacity = val->intval;
 			/* get only integer part */
 			val->intval /= 10;
 			if (!fuelgauge->is_charging &&
