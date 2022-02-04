@@ -2023,11 +2023,7 @@ static int check_vma(unsigned long hostptr, u64 size)
 	unsigned long cur = hostptr;
 
 	while (cur < (hostptr + size)) {
-<<<<<<< HEAD
 		vma = find_vma(current->mm, cur);
-=======
-			vma = find_vma(current->mm, cur);
->>>>>>> ba3a4587f6cf175a1dce0ed50e2dc5a520c2704b
 		if (!vma)
 			return false;
 
@@ -2065,20 +2061,13 @@ static int memdesc_sg_virt(struct kgsl_memdesc *memdesc, unsigned long useraddr)
 	down_read(&current->mm->mmap_sem);
 	if (!check_vma(useraddr, memdesc->size)) {
 		up_read(&current->mm->mmap_sem);
-<<<<<<< HEAD
 		ret = -EFAULT;
-=======
-		ret = ~EFAULT;
->>>>>>> ba3a4587f6cf175a1dce0ed50e2dc5a520c2704b
 		goto out;
 	}
 
 	npages = get_user_pages(current, current->mm, useraddr,
 				sglen, write, 0, pages, NULL);
-<<<<<<< HEAD
 
-=======
->>>>>>> ba3a4587f6cf175a1dce0ed50e2dc5a520c2704b
 	up_read(&current->mm->mmap_sem);
 
 	ret = (npages < 0) ? (int)npages : 0;
@@ -2110,8 +2099,6 @@ static int kgsl_setup_anon_useraddr(struct kgsl_pagetable *pagetable,
 {
 	/* Map an anonymous memory chunk */
 
-	int ret;
-
 	if (size == 0 || offset != 0 ||
 		!IS_ALIGNED(size, PAGE_SIZE))
 		return -EINVAL;
@@ -2121,6 +2108,7 @@ static int kgsl_setup_anon_useraddr(struct kgsl_pagetable *pagetable,
 	entry->memdesc.flags |= KGSL_MEMFLAGS_USERMEM_ADDR;
 
 	if (kgsl_memdesc_use_cpu_map(&entry->memdesc)) {
+		int ret;
 
 		/* Register the address in the database */
 		ret = kgsl_mmu_set_svm_region(pagetable,
@@ -2132,16 +2120,7 @@ static int kgsl_setup_anon_useraddr(struct kgsl_pagetable *pagetable,
 		entry->memdesc.gpuaddr = (uint64_t) hostptr;
 	}
 
-<<<<<<< HEAD
 	return memdesc_sg_virt(&entry->memdesc, hostptr);
-=======
-	ret = memdesc_sg_virt(&entry->memdesc, hostptr);
-
-	if (ret && kgsl_memdesc_use_cpu_map(&entry->memdesc))
-		kgsl_mmu_put_gpuaddr(&entry->memdesc);
-
-	return ret;
->>>>>>> ba3a4587f6cf175a1dce0ed50e2dc5a520c2704b
 }
 
 static int match_file(const void *p, struct file *file, unsigned int fd)
@@ -3866,27 +3845,17 @@ kgsl_get_unmapped_area(struct file *file, unsigned long addr,
 		if (IS_ERR_VALUE(val))
 			KGSL_DRV_ERR_RATELIMIT(device,
 				"get_unmapped_area: pid %d addr %lx pgoff %lx len %ld failed error %d\n",
-<<<<<<< HEAD
 				pid_nr(private->pid), addr, pgoff, len, (int) val);
-=======
-				pid_nr(private->pid), addr,
-				pgoff, len, (int) val);
->>>>>>> ba3a4587f6cf175a1dce0ed50e2dc5a520c2704b
 	} else {
 		 val = _get_svm_area(private, entry, addr, len, flags);
 		 if (IS_ERR_VALUE(val))
 			KGSL_DRV_ERR_RATELIMIT(device,
 				"_get_svm_area: pid %d addr %lx pgoff %lx len %ld failed error %d\n",
-<<<<<<< HEAD
 				pid_nr(private->pid), addr, pgoff, len, (int) val);
 #if defined(CONFIG_DISPLAY_SAMSUNG)
 		if (IS_ERR_VALUE(val))
 			kgsl_svm_addr_mapping_log(pid_nr(private->pid));
 #endif
-=======
-				pid_nr(private->pid), addr, pgoff, len,
-				(int) val);
->>>>>>> ba3a4587f6cf175a1dce0ed50e2dc5a520c2704b
 	}
 
 put:
