@@ -11737,14 +11737,6 @@
 			reg = <0x0 0x86300000 0x0 0x500000>;
 		};
 
-		modem_region@0 {
-			compatible = "removed-dma-pool";
-			reg = <0x0 0x86c00000 0x0 0x6a00000>;
-			no-map-fixup;
-			linux,phandle = <0x109>;
-			phandle = <0x109>;
-		};
-
 		adsp_fw_region@0 {
 			compatible = "removed-dma-pool";
 			no-map;
