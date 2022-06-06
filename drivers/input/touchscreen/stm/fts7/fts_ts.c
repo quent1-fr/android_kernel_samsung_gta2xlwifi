@@ -55,6 +55,8 @@
 #include <linux/sec_class.h>
 
 #ifdef CONFIG_OF
+#ifndef USE_OPEN_CLOSE
+#define USE_OPEN_CLOSE
 #undef CONFIG_HAS_EARLYSUSPEND
 #undef CONFIG_PM
 #endif
@@ -112,7 +114,9 @@ enum TOUCH_MODE {
 extern int poweroff_charging;
 #endif
 
-
+#ifdef USE_OPEN_CLOSE
+static int fts_input_open(struct input_dev *dev);
+static void fts_input_close(struct input_dev *dev);
 #ifdef USE_OPEN_DWORK
 static void fts_open_work(struct work_struct *work);
 #endif
@@ -131,7 +135,7 @@ static void dump_tsp_rawdata(struct work_struct *work);
 struct delayed_work *p_debug_work;
 #endif
 
-#if (!defined(CONFIG_HAS_EARLYSUSPEND)) && (!defined(CONFIG_PM))
+#if (!defined(CONFIG_HAS_EARLYSUSPEND)) && (!defined(CONFIG_PM)) && !defined(USE_OPEN_CLOSE)
 static int fts_suspend(struct i2c_client *client, pm_message_t mesg);
 static int fts_resume(struct i2c_client *client);
 #endif
@@ -2188,6 +2192,10 @@ static int fts_probe(struct i2c_client *client, const struct i2c_device_id *idp)
 	info->input_dev->phys = fts_ts_phys;
 	info->input_dev->id.bustype = BUS_I2C;
 
+#ifdef USE_OPEN_CLOSE
+	info->input_dev->open = fts_input_open;
+	info->input_dev->close = fts_input_close;
+#endif
 
 #ifdef CONFIG_GLOVE_TOUCH
 	input_set_capability(info->input_dev, EV_SW, SW_GLOVE);
@@ -2476,6 +2484,7 @@ static int fts_remove(struct i2c_client *client)
 	return 0;
 }
 
+#ifdef USE_OPEN_CLOSE
 #ifdef USE_OPEN_DWORK
 static void fts_open_work(struct work_struct *work)
 {
@@ -3203,7 +3212,7 @@ static int fts_pm_resume(struct device *dev)
 }
 #endif
 
-#if (!defined(CONFIG_HAS_EARLYSUSPEND)) && (!defined(CONFIG_PM)) &&
+#if (!defined(CONFIG_HAS_EARLYSUSPEND)) && (!defined(CONFIG_PM)) && !defined(USE_OPEN_CLOSE)
 static int fts_suspend(struct i2c_client *client, pm_message_t mesg)
 {
 	struct fts_ts_info *info = i2c_get_clientdata(client);
@@ -3263,7 +3272,7 @@ static struct i2c_driver fts_i2c_driver = {
 	.probe = fts_probe,
 	.remove = fts_remove,
 	.shutdown = fts_shutdown,
-#if (!defined(CONFIG_HAS_EARLYSUSPEND)) && (!defined(CONFIG_PM)) &&
+#if (!defined(CONFIG_HAS_EARLYSUSPEND)) && (!defined(CONFIG_PM)) && !defined(USE_OPEN_CLOSE)
 	.suspend = fts_suspend,
 	.resume = fts_resume,
 #endif

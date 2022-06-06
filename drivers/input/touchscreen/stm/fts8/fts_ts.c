@@ -82,6 +82,8 @@ enum subsystem {
 #endif
 
 #ifdef CONFIG_OF
+#ifndef USE_OPEN_CLOSE
+#define USE_OPEN_CLOSE
 #undef CONFIG_PM
 #endif
 #endif
@@ -108,6 +110,9 @@ enum TOUCH_MODE {
 };
 #endif
 
+#ifdef USE_OPEN_CLOSE
+static int fts_input_open(struct input_dev *dev);
+static void fts_input_close(struct input_dev *dev);
 #ifdef USE_OPEN_DWORK
 static void fts_open_work(struct work_struct *work);
 #endif
@@ -125,6 +130,10 @@ static void dump_tsp_rawdata(struct work_struct *work);
 struct delayed_work *p_debug_work;
 #endif
 
+#if (!defined(CONFIG_PM)) && !defined(USE_OPEN_CLOSE)
+static int fts_suspend(struct i2c_client *client, pm_message_t mesg);
+static int fts_resume(struct i2c_client *client);
+#endif
 
 static int fts_wait_for_ready(struct fts_ts_info *info);
 
@@ -2847,6 +2856,9 @@ static int fts_probe(struct i2c_client *client, const struct i2c_device_id *idp)
 	else
 		info->input_dev->name = "sec_touchscreen";
 	fts_set_input_prop(info, info->input_dev, INPUT_PROP_DIRECT);
+#ifdef USE_OPEN_CLOSE
+	info->input_dev->open = fts_input_open;
+	info->input_dev->close = fts_input_close;
 #endif
 	info->input_dev_touch = info->input_dev;
 
@@ -3093,6 +3105,7 @@ static int fts_remove(struct i2c_client *client)
 	return 0;
 }
 
+#ifdef USE_OPEN_CLOSE
 #ifdef USE_OPEN_DWORK
 static void fts_open_work(struct work_struct *work)
 {
@@ -3719,7 +3732,7 @@ static int fts_pm_resume(struct device *dev)
 }
 #endif
 
-#if (!defined(CONFIG_PM)) &&
+#if (!defined(CONFIG_PM)) && !defined(USE_OPEN_CLOSE)
 static int fts_suspend(struct i2c_client *client, pm_message_t mesg)
 {
 	struct fts_ts_info *info = i2c_get_clientdata(client);
@@ -3779,7 +3792,7 @@ static struct i2c_driver fts_i2c_driver = {
 	.probe = fts_probe,
 	.remove = fts_remove,
 	.shutdown = fts_shutdown,
-#if (!defined(CONFIG_PM)) &&
+#if (!defined(CONFIG_PM)) && !defined(USE_OPEN_CLOSE)
 	.suspend = fts_suspend,
 	.resume = fts_resume,
 #endif
