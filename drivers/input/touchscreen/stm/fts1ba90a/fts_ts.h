@@ -7,6 +7,11 @@
 #include <linux/vmalloc.h>
 #include <linux/proc_fs.h>
 
+#ifdef CONFIG_FB
+#include <linux/notifier.h>
+#include <linux/fb.h>
+#endif
+
 #undef FTS_SUPPORT_TOUCH_KEY
 #undef FTS_SUPPORT_PRESSURE_SENSOR
 #define FTS_SUPPORT_SPONGELIB
@@ -734,6 +739,10 @@ struct fts_ts_info {
 	char *cmoffset_main_proc;
 
 	int prox_power_off;
+
+#if defined(CONFIG_FB)
+	struct notifier_block fb_notif;
+#endif
 
 	int (*stop_device)(struct fts_ts_info *info, bool lpmode);
 	int (*start_device)(struct fts_ts_info *info);

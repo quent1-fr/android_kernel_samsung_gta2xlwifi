@@ -72,6 +72,11 @@ enum subsystem {
 
 #endif
 
+#ifdef CONFIG_FB
+#include <linux/notifier.h>
+#include <linux/fb.h>
+#endif
+
 #ifdef CONFIG_OF
 #ifndef USE_OPEN_CLOSE
 #define USE_OPEN_CLOSE
@@ -119,6 +124,35 @@ struct delayed_work *p_debug_work;
 #if (!defined(CONFIG_PM)) && !defined(USE_OPEN_CLOSE)
 static int fts_suspend(struct i2c_client *client, pm_message_t mesg);
 static int fts_resume(struct i2c_client *client);
+#endif
+
+#if defined(CONFIG_FB)
+static int fb_notifier_callback(struct notifier_block *self,
+				unsigned long event, void *data)
+{
+	struct fb_event *evdata = data;
+	struct fts_ts_info *info = container_of(self, struct fts_ts_info, fb_notif);
+
+	if (evdata && evdata->data && event == FB_EVENT_BLANK) {
+		int *blank = evdata->data;
+		switch (*blank) {
+		case FB_BLANK_UNBLANK:
+		case FB_BLANK_NORMAL:
+		case FB_BLANK_VSYNC_SUSPEND:
+		case FB_BLANK_HSYNC_SUSPEND:
+			fts_start_device(info);
+			break;
+		case FB_BLANK_POWERDOWN:
+			fts_stop_device(info, info->lowpower_flag);
+			break;
+		default:
+			/* Don't handle what we don't understand */
+			break;
+		}
+	}
+
+	return 0;
+}
 #endif
 
 #if defined(CONFIG_SECURE_TOUCH)
@@ -2729,6 +2763,12 @@ static int fts_probe(struct i2c_client *client, const struct i2c_device_id *idp)
 	p_debug_work = &info->debug_work;
 #endif
 
+#ifdef CONFIG_FB
+	info->fb_notif.notifier_call = fb_notifier_callback;
+	if (fb_register_client(&info->fb_notif))
+		pr_err("%s: could not create fb notifier\n", __func__);
+#endif
+
 	input_err(true, &info->client->dev, "%s: done\n", __func__);
 	input_log_fix();
 
@@ -2747,6 +2787,9 @@ err_enable_irq:
 		info->input_dev_pad = NULL;
 	}
 err_register_input_pad:
+#ifdef CONFIG_FB
+	fb_unregister_client(&info->fb_notif);
+#endif
 	input_unregister_device(info->input_dev);
 	info->input_dev = NULL;
 	info->input_dev_touch = NULL;
@@ -3454,7 +3497,7 @@ static int fts_pm_suspend(struct device *dev)
 
 	input_dbg(true, &info->client->dev, "%s\n", __func__);
 
-#ifdef USE_OPEN_CLOSE
+#ifndef USE_OPEN_CLOSE
 	if (info->input_dev) {
 		int retval = mutex_lock_interruptible(&info->input_dev->mutex);
 
